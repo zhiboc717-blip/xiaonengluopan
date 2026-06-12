@@ -766,7 +766,8 @@
 <div class="modal-overlay" id="overdueModal">
     <div class="modal-box">
         <div class="flex items-center justify-between mb-4"><h2 class="font-bold text-lg">⚠️ 未完成任务处理</h2><button onclick="closeModal('overdueModal')" class="text-2xl leading-none">&times;</button></div>
-        <p class="text-sm mb-4" style="color:var(--text-secondary)">以下任务已过截止日期但尚未完成，你可以选择继续推进或删除</p>
+        <p class="text-sm mb-3" style="color:var(--text-secondary)">以下任务已过截止日期但尚未完成，你可以选择继续推进或删除</p>
+        <button onclick="postponeAllToToday()" class="mb-4 text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:var(--blue)">📅 一键延期所有任务到今天</button>
         <div id="overdueTaskList" class="space-y-3"></div>
     </div>
 </div>
@@ -2301,6 +2302,20 @@ function postponeTask(id) {
     const remaining = d.tasks.filter(t2 => !t2.completed && t2.date && t2.date < today());
     if (remaining.length === 0) closeModal('overdueModal');
     else showOverduePanel();
+}
+
+function postponeAllToToday() {
+    const d = getData();
+    const overdueTasks = d.tasks.filter(t => !t.completed && t.date && t.date < today());
+    if (overdueTasks.length === 0) { showToast('没有过期任务', 'info'); return; }
+    overdueTasks.forEach(t => {
+        t.date = today();
+        t.postponed = true;
+    });
+    saveData(d);
+    showToast(`已延期 ${overdueTasks.length} 个任务到今天`, 'success');
+    refreshAll();
+    closeModal('overdueModal');
 }
 
 function completeAndDelete(id) {
